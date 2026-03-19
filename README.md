@@ -23,3 +23,61 @@ If you are developing a production application, we recommend using TypeScript wi
 # Weather-Website-Project
 A simple weather application built with React and Vite that allows users to search for any city and view current weather conditions.
 >>>>>>> 23132370a95a1a064333bfccbf1eec4624a50f6f
+A modern and responsive weather application built with React, Vite, and Tailwind CSS, allowing users to search for real-time weather data and view a 5-day forecast for any city worldwide.
+
+This project focuses on building a clean user interface, handling asynchronous data from external APIs, and implementing practical features that simulate real-world applications.
+
+Features
+
+🔍 City Search
+
+- Search for any city and retrieve real-time weather data
+- Displays temperature, weather condition, and additional details
+
+📍 Geolocation Support
+
+- Get current weather based on the user’s location using the browser’s Geolocation API
+- Automatically fetches weather and forecast using latitude and longitude
+
+🌡️ Detailed Weather Information
+
+- Temperature and “feels like”
+- Humidity
+- Wind speed
+- Minimum and maximum temperatures
+
+📅 5-Day Forecast
+
+- Displays a daily forecast using data from the OpenWeather API
+Each day includes:
+Weather condition
+Temperature
+Icon representation
+
+⏳ Loading & Error Handling
+
+- Custom loading spinner while fetching data
+- User-friendly error messages for invalid input or failed requests
+
+🎨 Modern UI Design
+
+- Built with Tailwind CSS
+- Fully responsive layout
+- Clean and user-friendly interface
+
+* Tech Stack
+
+- Frontend: React.js (with Vite)
+- Styling: Tailwind CSS
+- API: OpenWeather API
+- State Management: React Hooks (useState)
+- Browser API: Geolocation API
+
+* What I Learned
+
+- How to integrate and manage data from external APIs
+- Handling asynchronous operations with async/await
+- Structuring a React application using reusable components
+- Managing application state and conditional rendering
+- Improving user experience with loading states and error handling
+- Working with browser APIs like Geolocation
