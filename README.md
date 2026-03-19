@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Weather-Website_Project
 =======
 # React + Vite
@@ -18,3 +19,7 @@ The React Compiler is not enabled on this template because of its impact on dev 
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
 >>>>>>> c9f62c7 (Initial commit)
+=======
+# Weather-Website-Project
+A simple weather application built with React and Vite that allows users to search for any city and view current weather conditions.
+>>>>>>> 23132370a95a1a064333bfccbf1eec4624a50f6f
