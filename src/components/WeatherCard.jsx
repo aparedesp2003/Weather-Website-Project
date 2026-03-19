@@ -1,9 +1,20 @@
-const WeatherCard = ({ data, unit }) => {
+const WeatherCard = ({ data, unit, onTogglePin, isPinned }) => {
   const tempSymbol = unit === "metric" ? "°C" : "°F";
   const windUnit = unit === "metric" ? "km/h" : "mph";
 
   return (
     <section className="rounded-3xl bg-white/10 p-6 text-white shadow-2xl backdrop-blur-lg">
+      
+      {/* ⭐ Pin Button */}
+      <div className="mb-4 flex justify-end">
+        <button
+          onClick={() => onTogglePin(data.name)}
+          className="rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/25"
+        >
+          {isPinned ? "⭐ Unpin" : "☆ Pin"}
+        </button>
+      </div>
+
       <div className="flex flex-col items-center justify-between gap-6 md:flex-row md:items-center">
         <div className="text-center md:text-left">
           <h2 className="text-3xl font-bold">

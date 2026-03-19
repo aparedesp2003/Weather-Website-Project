@@ -4,6 +4,7 @@ import WeatherCard from "../components/WeatherCard";
 import ForecastSection from "../components/ForecastSection";
 import Loader from "../components/Loader";
 import ErrorMessage from "../components/ErrorMessage";
+import PinnedCitiesPanel from "../components/PinnedCitiesPanel";
 import {
   fetchWeatherByCity,
   fetchForecastByCity,
@@ -28,6 +29,13 @@ const Home = () => {
     return savedCities ? JSON.parse(savedCities) : [];
   });
 
+  const [pinnedCityNames, setPinnedCityNames] = useState(() => {
+    const savedPinnedCities = localStorage.getItem("pinnedCities");
+    return savedPinnedCities ? JSON.parse(savedPinnedCities) : [];
+  });
+
+  const [pinnedCitiesWeather, setPinnedCitiesWeather] = useState([]);
+
   useEffect(() => {
     localStorage.setItem("weatherUnit", unit);
   }, [unit]);
@@ -35,6 +43,10 @@ const Home = () => {
   useEffect(() => {
     localStorage.setItem("recentCities", JSON.stringify(recentCities));
   }, [recentCities]);
+
+  useEffect(() => {
+    localStorage.setItem("pinnedCities", JSON.stringify(pinnedCityNames));
+  }, [pinnedCityNames]);
 
   useEffect(() => {
     if (lastSearchType === "city" && currentCity) {
@@ -45,6 +57,26 @@ const Home = () => {
       fetchLocationWeather(coords.latitude, coords.longitude);
     }
   }, [unit]);
+
+  useEffect(() => {
+    const loadPinnedCitiesWeather = async () => {
+      if (!pinnedCityNames.length) {
+        setPinnedCitiesWeather([]);
+        return;
+      }
+
+      try {
+        const pinnedWeatherData = await Promise.all(
+          pinnedCityNames.map((city) => fetchWeatherByCity(city, unit))
+        );
+        setPinnedCitiesWeather(pinnedWeatherData);
+      } catch (err) {
+        console.error("Failed to load pinned cities weather:", err);
+      }
+    };
+
+    loadPinnedCitiesWeather();
+  }, [pinnedCityNames, unit]);
 
   const handleToggleUnit = () => {
     setUnit((prevUnit) => (prevUnit === "metric" ? "imperial" : "metric"));
@@ -62,6 +94,36 @@ const Home = () => {
     });
   };
 
+  const togglePinnedCity = (city) => {
+    setPinnedCityNames((prevPinnedCities) => {
+      const alreadyPinned = prevPinnedCities.some(
+        (savedCity) => savedCity.toLowerCase() === city.toLowerCase()
+      );
+
+      if (alreadyPinned) {
+        return prevPinnedCities.filter(
+          (savedCity) => savedCity.toLowerCase() !== city.toLowerCase()
+        );
+      }
+
+      return [city, ...prevPinnedCities].slice(0, 6);
+    });
+  };
+
+  const removePinnedCity = (city) => {
+    setPinnedCityNames((prevPinnedCities) =>
+      prevPinnedCities.filter(
+        (savedCity) => savedCity.toLowerCase() !== city.toLowerCase()
+      )
+    );
+  };
+
+  const isCurrentCityPinned = weatherData
+    ? pinnedCityNames.some(
+        (city) => city.toLowerCase() === weatherData.name.toLowerCase()
+      )
+    : false;
+
   const handleSearch = async (searchCity) => {
     if (!searchCity) return;
 
@@ -74,7 +136,7 @@ const Home = () => {
 
       setWeatherData(weather);
       setForecastData(forecast);
-      setCurrentCity(searchCity);
+      setCurrentCity(weather.name);
       setLastSearchType("city");
       updateRecentCities(weather.name);
     } catch (err) {
@@ -271,7 +333,22 @@ const Home = () => {
         {loading && <Loader />}
         {error && <ErrorMessage message={error} />}
 
-        {weatherData && <WeatherCard data={weatherData} unit={unit} />}
+        {weatherData && (
+          <WeatherCard
+            data={weatherData}
+            unit={unit}
+            onTogglePin={togglePinnedCity}
+            isPinned={isCurrentCityPinned}
+          />
+        )}
+
+        {pinnedCitiesWeather.length > 0 && (
+          <PinnedCitiesPanel
+            cities={pinnedCitiesWeather}
+            unit={unit}
+            onRemoveCity={removePinnedCity}
+          />
+        )}
 
         {forecastData.length > 0 && (
           <ForecastSection data={forecastData} unit={unit} />
