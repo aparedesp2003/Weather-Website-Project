@@ -1,1 +1,71 @@
 @import "tailwindcss";
+
+.rain-drop {
+  animation-name: rainfall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  transform: rotate(18deg);
+}
+
+@keyframes rainfall {
+  0% {
+    transform: translateY(-120px) rotate(18deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(18deg);
+    opacity: 0;
+  }
+}
+
+.snow-flake {
+  animation-name: snowfall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes snowfall {
+  0% {
+    transform: translateY(-40px) translateX(0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(50vh) translateX(12px);
+  }
+  100% {
+    transform: translateY(110vh) translateX(-12px);
+    opacity: 0;
+  }
+}
+
+.lightning-flash {
+  animation: lightning 7s infinite;
+}
+
+@keyframes lightning {
+  0%, 96%, 100% {
+    opacity: 0;
+  }
+
+  97% {
+    opacity: 0.6;
+  }
+
+  97.2% {
+    opacity: 0;
+  }
+
+  97.5% {
+    opacity: 1;
+  }
+
+  98% {
+    opacity: 0;
+  }
+}

@@ -15,10 +15,11 @@ const SearchBar = ({ onSearch, onUseLocation }) => {
   };
 
   return (
-    <div className="w-full max-w-md">
+    <div className="w-full flex flex-col items-center">
+      {/* Input + Button */}
       <form
         onSubmit={handleSubmit}
-        className="flex items-center gap-3"
+        className="flex w-full max-w-md items-center gap-3"
       >
         <input
           type="text"
@@ -36,9 +37,10 @@ const SearchBar = ({ onSearch, onUseLocation }) => {
         </button>
       </form>
 
+      {/* Location Button */}
       <button
         onClick={onUseLocation}
-        className="mt-4 w-full rounded-xl bg-slate-700 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-600"
+        className="mt-4 w-full max-w-md rounded-xl bg-slate-700 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-600"
       >
         Use my current location
       </button>

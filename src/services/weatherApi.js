@@ -2,7 +2,7 @@ const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
 const CURRENT_WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather";
 const FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast";
 
-const formatWeatherData = (data) => {
+const formatWeatherData = (data, unit = "metric") => {
   return {
     name: data.name,
     country: data.sys.country,
@@ -10,21 +10,24 @@ const formatWeatherData = (data) => {
     feelsLike: Math.round(data.main.feels_like),
     description: data.weather[0].description,
     humidity: data.main.humidity,
-    windSpeed: Math.round(data.wind.speed * 3.6),
+    windSpeed:
+      unit === "metric"
+        ? Math.round(data.wind.speed * 3.6)
+        : Math.round(data.wind.speed),
     tempMin: Math.round(data.main.temp_min),
     tempMax: Math.round(data.main.temp_max),
     icon: data.weather[0].icon,
   };
 };
 
-export const fetchWeatherByCity = async (city) => {
+export const fetchWeatherByCity = async (city, unit = "metric") => {
   if (!API_KEY) {
     throw new Error("Missing API key. Check your .env file.");
   }
 
   const url = `${CURRENT_WEATHER_URL}?q=${encodeURIComponent(
     city
-  )}&appid=${API_KEY}&units=metric`;
+  )}&appid=${API_KEY}&units=${unit}`;
 
   const response = await fetch(url);
 
@@ -33,17 +36,17 @@ export const fetchWeatherByCity = async (city) => {
   }
 
   const data = await response.json();
-  return formatWeatherData(data);
+  return formatWeatherData(data, unit);
 };
 
-export const fetchForecastByCity = async (city) => {
+export const fetchForecastByCity = async (city, unit = "metric") => {
   if (!API_KEY) {
     throw new Error("Missing API key. Check your .env file.");
   }
 
   const url = `${FORECAST_URL}?q=${encodeURIComponent(
     city
-  )}&appid=${API_KEY}&units=metric`;
+  )}&appid=${API_KEY}&units=${unit}`;
 
   const response = await fetch(url);
 
@@ -69,12 +72,12 @@ export const fetchForecastByCity = async (city) => {
   return dailyForecast;
 };
 
-export const fetchWeatherByCoords = async (lat, lon) => {
+export const fetchWeatherByCoords = async (lat, lon, unit = "metric") => {
   if (!API_KEY) {
     throw new Error("Missing API key. Check your .env file.");
   }
 
-  const url = `${CURRENT_WEATHER_URL}?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
+  const url = `${CURRENT_WEATHER_URL}?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${unit}`;
 
   const response = await fetch(url);
 
@@ -83,15 +86,15 @@ export const fetchWeatherByCoords = async (lat, lon) => {
   }
 
   const data = await response.json();
-  return formatWeatherData(data);
+  return formatWeatherData(data, unit);
 };
 
-export const fetchForecastByCoords = async (lat, lon) => {
+export const fetchForecastByCoords = async (lat, lon, unit = "metric") => {
   if (!API_KEY) {
     throw new Error("Missing API key. Check your .env file.");
   }
 
-  const url = `${FORECAST_URL}?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
+  const url = `${FORECAST_URL}?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${unit}`;
 
   const response = await fetch(url);
 
