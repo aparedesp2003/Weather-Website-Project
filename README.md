@@ -87,6 +87,12 @@ While building this project, I improved my skills in:
 * Weather map integration
 * Multi-language support
 
+## Screenshots
+![Home](./public/Screenshots/screenshot1.png)
+![Forecast](./public/Screenshots/screenshot2.png)
+![Pinned Cities](./public/Screenshots/screenshot3.png)
+![Full Page](./public/Screenshots/screenshot4.png)
+
 ## Author
 
 Andres Paredes
