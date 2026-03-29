@@ -21,63 +21,74 @@ If you are developing a production application, we recommend using TypeScript wi
 >>>>>>> c9f62c7 (Initial commit)
 =======
 # Weather-Website-Project
-A simple weather application built with React and Vite that allows users to search for any city and view current weather conditions.
->>>>>>> 23132370a95a1a064333bfccbf1eec4624a50f6f
-A modern and responsive weather application built with React, Vite, and Tailwind CSS, allowing users to search for real-time weather data and view a 5-day forecast for any city worldwide.
+# SkyPulse Weather App
 
-This project focuses on building a clean user interface, handling asynchronous data from external APIs, and implementing practical features that simulate real-world applications.
+SkyPulse is a modern weather application that allows users to search for any city in the world and view real-time weather conditions, a 5-day forecast, and detailed weather information. The application also supports geolocation, pinned cities, recent searches, and dynamic backgrounds based on weather conditions.
 
-Features
+## Live Demo
 
-🔍 City Search
+(https://weather-website-project-4hcx.vercel.app/)
 
-- Search for any city and retrieve real-time weather data
-- Displays temperature, weather condition, and additional details
+## Features
 
-📍 Geolocation Support
+* Search weather by city name
+* Use current location (Geolocation)
+* 5-day weather forecast
+* Switch between Celsius and Fahrenheit
+* Recent searches (saved in LocalStorage)
+* Pin favorite cities
+* Dynamic backgrounds based on weather conditions
+* Animated weather effects (rain, snow, thunder, clear)
+* Responsive design for mobile and desktop
 
-- Get current weather based on the user’s location using the browser’s Geolocation API
-- Automatically fetches weather and forecast using latitude and longitude
+## Technologies Used
 
-🌡️ Detailed Weather Information
+* React
+* Tailwind CSS
+* OpenWeather API
+* LocalStorage
+* Geolocation API
+* Vercel (Deployment)
 
-- Temperature and “feels like”
-- Humidity
-- Wind speed
-- Minimum and maximum temperatures
+## Project Structure
 
-📅 5-Day Forecast
+src/
+components/
+HeroSection.jsx
+SearchBar.jsx
+WeatherCard.jsx
+ForecastSection.jsx
+PinnedCitiesPanel.jsx
+Loader.jsx
+ErrorMessage.jsx
+Footer.jsx
 
-- Displays a daily forecast using data from the OpenWeather API
-Each day includes:
-Weather condition
-Temperature
-Icon representation
+pages/
+Home.jsx
 
-⏳ Loading & Error Handling
+services/
+weatherApi.js
 
-- Custom loading spinner while fetching data
-- User-friendly error messages for invalid input or failed requests
+## What I Learned
 
-🎨 Modern UI Design
+While building this project, I improved my skills in:
 
-- Built with Tailwind CSS
-- Fully responsive layout
-- Clean and user-friendly interface
+* Working with APIs and asynchronous JavaScript
+* Managing state in React
+* Component-based architecture
+* Responsive UI design with Tailwind CSS
+* Using LocalStorage to persist user data
+* Deploying applications using Vercel
 
-* Tech Stack
+## Future Improvements
 
-- Frontend: React.js (with Vite)
-- Styling: Tailwind CSS
-- API: OpenWeather API
-- State Management: React Hooks (useState)
-- Browser API: Geolocation API
+* Hourly forecast
+* Dark/Light mode toggle
+* Weather map integration
+* Multi-language support
 
-* What I Learned
+## Author
 
-- How to integrate and manage data from external APIs
-- Handling asynchronous operations with async/await
-- Structuring a React application using reusable components
-- Managing application state and conditional rendering
-- Improving user experience with loading states and error handling
-- Working with browser APIs like Geolocation
+Andres Paredes
+GitHub: https://github.com/aparedesp2003
+LinkedIn: https://www.linkedin.com/in/andresparedesp/

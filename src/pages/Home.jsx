@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import HeroSection from "../components/HeroSection.jsx";
 import SearchBar from "../components/SearchBar";
 import WeatherCard from "../components/WeatherCard";
 import ForecastSection from "../components/ForecastSection";
+import Footer from "../components/Footer";
 import Loader from "../components/Loader";
 import ErrorMessage from "../components/ErrorMessage";
 import PinnedCitiesPanel from "../components/PinnedCitiesPanel";
@@ -284,78 +286,83 @@ const Home = () => {
   };
 
   return (
-    <main
-      className={`relative min-h-screen overflow-hidden ${getBackgroundClass()} px-4 py-8 transition-all duration-700`}
-    >
-      {renderWeatherEffect()}
+  <main
+    className={`relative min-h-screen overflow-hidden ${getBackgroundClass()} px-4 py-8 transition-all duration-700`}
+  >
+    {renderWeatherEffect()}
 
-      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col gap-6 drop-shadow-2xl">
-        <div className="flex justify-end">
-          <button
-            onClick={handleToggleUnit}
-            className="rounded-full bg-white/20 px-4 py-2 text-sm font-semibold text-white shadow-md backdrop-blur-md transition hover:bg-white/30"
-          >
-            {unit === "metric" ? "Switch to °F" : "Switch to °C"}
-          </button>
-        </div>
-
-        <SearchBar onSearch={handleSearch} onUseLocation={handleUseLocation} />
-
-        {recentCities.length > 0 && (
-          <div className="flex flex-col items-center gap-3">
-            <div className="flex items-center gap-3">
-              <p className="text-sm font-medium text-blue-100">
-                Recent searches
-              </p>
-
-              <button
-                onClick={() => setRecentCities([])}
-                className="text-xs text-blue-200 transition hover:text-white hover:underline"
-              >
-                Clear
-              </button>
-            </div>
-
-            <div className="flex flex-wrap justify-center gap-3">
-              {recentCities.map((city) => (
-                <button
-                  key={city}
-                  onClick={() => handleSearch(city)}
-                  className="rounded-full border border-white/10 bg-white/20 px-4 py-2 text-sm font-medium text-white backdrop-blur-md transition hover:scale-105 hover:bg-white/30 active:scale-95"
-                >
-                  {city}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {loading && <Loader />}
-        {error && <ErrorMessage message={error} />}
-
-        {weatherData && (
-          <WeatherCard
-            data={weatherData}
-            unit={unit}
-            onTogglePin={togglePinnedCity}
-            isPinned={isCurrentCityPinned}
-          />
-        )}
-
-        {pinnedCitiesWeather.length > 0 && (
-          <PinnedCitiesPanel
-            cities={pinnedCitiesWeather}
-            unit={unit}
-            onRemoveCity={removePinnedCity}
-          />
-        )}
-
-        {forecastData.length > 0 && (
-          <ForecastSection data={forecastData} unit={unit} />
-        )}
+    <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col gap-8 drop-shadow-2xl">
+      <div className="flex justify-end">
+        <button
+          onClick={handleToggleUnit}
+          className="rounded-full bg-white/20 px-4 py-2 text-sm font-semibold text-white shadow-md backdrop-blur-md transition hover:bg-white/30"
+        >
+          {unit === "metric" ? "Switch to °F" : "Switch to °C"}
+        </button>
       </div>
-    </main>
-  );
+
+      {/* HERO SECTION — ADD HERE */}
+      <HeroSection />
+
+      <SearchBar onSearch={handleSearch} onUseLocation={handleUseLocation} />
+
+      {recentCities.length > 0 && (
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex items-center gap-3">
+            <p className="text-sm font-medium text-blue-100">
+              Recent searches
+            </p>
+
+            <button
+              onClick={() => setRecentCities([])}
+              className="text-xs text-blue-200 transition hover:text-white hover:underline"
+            >
+              Clear
+            </button>
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-3">
+            {recentCities.map((city) => (
+              <button
+                key={city}
+                onClick={() => handleSearch(city)}
+                className="rounded-full border border-white/10 bg-white/20 px-4 py-2 text-sm font-medium text-white backdrop-blur-md transition hover:scale-105 hover:bg-white/30 active:scale-95"
+              >
+                {city}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {loading && <Loader />}
+      {error && <ErrorMessage message={error} />}
+
+      {weatherData && (
+        <WeatherCard
+          data={weatherData}
+          unit={unit}
+          onTogglePin={togglePinnedCity}
+          isPinned={isCurrentCityPinned}
+        />
+      )}
+
+      {pinnedCitiesWeather.length > 0 && (
+        <PinnedCitiesPanel
+          cities={pinnedCitiesWeather}
+          unit={unit}
+          onRemoveCity={removePinnedCity}
+        />
+      )}
+
+      {forecastData.length > 0 && (
+        <ForecastSection data={forecastData} unit={unit} />
+      )}
+
+      <Footer />
+    </div>
+  </main>
+);
 };
 
 export default Home;
