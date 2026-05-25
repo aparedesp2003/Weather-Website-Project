@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import HeroSection from "../components/HeroSection.jsx";
 import SearchBar from "../components/SearchBar";
 import WeatherCard from "../components/WeatherCard";
@@ -19,9 +19,11 @@ const Home = () => {
   const [forecastData, setForecastData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
   const [unit, setUnit] = useState(
-    localStorage.getItem("weatherUnit") || "metric"
+    localStorage.getItem("weatherUnit") || "metric",
   );
+
   const [currentCity, setCurrentCity] = useState("");
   const [lastSearchType, setLastSearchType] = useState("");
   const [coords, setCoords] = useState(null);
@@ -50,107 +52,91 @@ const Home = () => {
     localStorage.setItem("pinnedCities", JSON.stringify(pinnedCityNames));
   }, [pinnedCityNames]);
 
-  useEffect(() => {
-    if (lastSearchType === "city" && currentCity) {
-      handleSearch(currentCity);
-    }
-
-    if (lastSearchType === "location" && coords) {
-      fetchLocationWeather(coords.latitude, coords.longitude);
-    }
-  }, [unit]);
-
-  useEffect(() => {
-    const loadPinnedCitiesWeather = async () => {
-      if (!pinnedCityNames.length) {
-        setPinnedCitiesWeather([]);
-        return;
-      }
-
-      try {
-        const pinnedWeatherData = await Promise.all(
-          pinnedCityNames.map((city) => fetchWeatherByCity(city, unit))
-        );
-        setPinnedCitiesWeather(pinnedWeatherData);
-      } catch (err) {
-        console.error("Failed to load pinned cities weather:", err);
-      }
-    };
-
-    loadPinnedCitiesWeather();
-  }, [pinnedCityNames, unit]);
-
-  const handleToggleUnit = () => {
-    setUnit((prevUnit) => (prevUnit === "metric" ? "imperial" : "metric"));
-  };
-
-  const updateRecentCities = (city) => {
+  const updateRecentCities = useCallback((city) => {
     setRecentCities((prevCities) => {
       const normalizedCity = city.trim();
 
       const filteredCities = prevCities.filter(
-        (savedCity) => savedCity.toLowerCase() !== normalizedCity.toLowerCase()
+        (savedCity) => savedCity.toLowerCase() !== normalizedCity.toLowerCase(),
       );
 
       return [normalizedCity, ...filteredCities].slice(0, 5);
     });
-  };
+  }, []);
 
-  const togglePinnedCity = (city) => {
-    setPinnedCityNames((prevPinnedCities) => {
-      const alreadyPinned = prevPinnedCities.some(
-        (savedCity) => savedCity.toLowerCase() === city.toLowerCase()
-      );
+  const handleSearch = useCallback(
+    async (searchCity, selectedUnit = unit) => {
+      if (!searchCity) return;
 
-      if (alreadyPinned) {
-        return prevPinnedCities.filter(
-          (savedCity) => savedCity.toLowerCase() !== city.toLowerCase()
-        );
+      try {
+        setLoading(true);
+        setError("");
+
+        const weather = await fetchWeatherByCity(searchCity, selectedUnit);
+        const forecast = await fetchForecastByCity(searchCity, selectedUnit);
+
+        setWeatherData(weather);
+        setForecastData(forecast);
+        setCurrentCity(weather.name);
+        setLastSearchType("city");
+        updateRecentCities(weather.name);
+      } catch {
+        setError("City not found. Please try again.");
+        setWeatherData(null);
+        setForecastData([]);
+      } finally {
+        setLoading(false);
       }
+    },
+    [unit, updateRecentCities],
+  );
 
-      return [city, ...prevPinnedCities].slice(0, 6);
-    });
-  };
+  const fetchLocationWeather = useCallback(
+    async (latitude, longitude, selectedUnit = unit) => {
+      try {
+        setLoading(true);
+        setError("");
 
-  const removePinnedCity = (city) => {
-    setPinnedCityNames((prevPinnedCities) =>
-      prevPinnedCities.filter(
-        (savedCity) => savedCity.toLowerCase() !== city.toLowerCase()
-      )
-    );
-  };
+        const weather = await fetchWeatherByCoords(
+          latitude,
+          longitude,
+          selectedUnit,
+        );
+        const forecast = await fetchForecastByCoords(
+          latitude,
+          longitude,
+          selectedUnit,
+        );
 
-  const isCurrentCityPinned = weatherData
-    ? pinnedCityNames.some(
-        (city) => city.toLowerCase() === weatherData.name.toLowerCase()
-      )
-    : false;
+        setWeatherData(weather);
+        setForecastData(forecast);
+        setLastSearchType("location");
+      } catch {
+        setError("Unable to fetch weather for your location.");
+        setWeatherData(null);
+        setForecastData([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [unit],
+  );
 
-  const handleSearch = async (searchCity) => {
-    if (!searchCity) return;
+  const handleToggleUnit = async () => {
+    const nextUnit = unit === "metric" ? "imperial" : "metric";
 
-    try {
-      setLoading(true);
-      setError("");
+    setUnit(nextUnit);
 
-      const weather = await fetchWeatherByCity(searchCity, unit);
-      const forecast = await fetchForecastByCity(searchCity, unit);
+    if (lastSearchType === "city" && currentCity) {
+      await handleSearch(currentCity, nextUnit);
+    }
 
-      setWeatherData(weather);
-      setForecastData(forecast);
-      setCurrentCity(weather.name);
-      setLastSearchType("city");
-      updateRecentCities(weather.name);
-    } catch (err) {
-      setError("City not found. Please try again.");
-      setWeatherData(null);
-      setForecastData([]);
-    } finally {
-      setLoading(false);
+    if (lastSearchType === "location" && coords) {
+      await fetchLocationWeather(coords.latitude, coords.longitude, nextUnit);
     }
   };
 
-  const handleUseLocation = () => {
+  const handleUseLocation = useCallback(() => {
     if (!navigator.geolocation) {
       setError("Geolocation is not supported by your browser.");
       return;
@@ -168,29 +154,60 @@ const Home = () => {
       () => {
         setError("Permission denied for location.");
         setLoading(false);
+      },
+    );
+  }, [fetchLocationWeather]);
+
+  useEffect(() => {
+    const loadPinnedCitiesWeather = async () => {
+      if (!pinnedCityNames.length) {
+        setPinnedCitiesWeather([]);
+        return;
       }
+
+      try {
+        const pinnedWeatherData = await Promise.all(
+          pinnedCityNames.map((city) => fetchWeatherByCity(city, unit)),
+        );
+
+        setPinnedCitiesWeather(pinnedWeatherData);
+      } catch (err) {
+        console.error("Failed to load pinned cities weather:", err);
+      }
+    };
+
+    loadPinnedCitiesWeather();
+  }, [pinnedCityNames, unit]);
+
+  const togglePinnedCity = (city) => {
+    setPinnedCityNames((prevPinnedCities) => {
+      const alreadyPinned = prevPinnedCities.some(
+        (savedCity) => savedCity.toLowerCase() === city.toLowerCase(),
+      );
+
+      if (alreadyPinned) {
+        return prevPinnedCities.filter(
+          (savedCity) => savedCity.toLowerCase() !== city.toLowerCase(),
+        );
+      }
+
+      return [city, ...prevPinnedCities].slice(0, 6);
+    });
+  };
+
+  const removePinnedCity = (city) => {
+    setPinnedCityNames((prevPinnedCities) =>
+      prevPinnedCities.filter(
+        (savedCity) => savedCity.toLowerCase() !== city.toLowerCase(),
+      ),
     );
   };
 
-  const fetchLocationWeather = async (latitude, longitude) => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const weather = await fetchWeatherByCoords(latitude, longitude, unit);
-      const forecast = await fetchForecastByCoords(latitude, longitude, unit);
-
-      setWeatherData(weather);
-      setForecastData(forecast);
-      setLastSearchType("location");
-    } catch (err) {
-      setError("Unable to fetch weather for your location.");
-      setWeatherData(null);
-      setForecastData([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const isCurrentCityPinned = weatherData
+    ? pinnedCityNames.some(
+        (city) => city.toLowerCase() === weatherData.name.toLowerCase(),
+      )
+    : false;
 
   const getWeatherCondition = () => {
     if (!weatherData) return "default";
@@ -198,12 +215,17 @@ const Home = () => {
     const condition = weatherData.description.toLowerCase();
 
     if (condition.includes("clear")) return "clear";
-    if (condition.includes("rain") || condition.includes("drizzle"))
+
+    if (condition.includes("rain") || condition.includes("drizzle")) {
       return "rain";
+    }
+
     if (condition.includes("snow")) return "snow";
     if (condition.includes("cloud")) return "clouds";
-    if (condition.includes("thunder") || condition.includes("storm"))
+
+    if (condition.includes("thunder") || condition.includes("storm")) {
       return "thunder";
+    }
 
     return "default";
   };
@@ -286,83 +308,82 @@ const Home = () => {
   };
 
   return (
-  <main
-    className={`relative min-h-screen overflow-hidden ${getBackgroundClass()} px-4 py-8 transition-all duration-700`}
-  >
-    {renderWeatherEffect()}
+    <main
+      className={`relative min-h-screen overflow-hidden ${getBackgroundClass()} px-4 py-8 transition-all duration-700`}
+    >
+      {renderWeatherEffect()}
 
-    <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col gap-8 drop-shadow-2xl">
-      <div className="flex justify-end">
-        <button
-          onClick={handleToggleUnit}
-          className="rounded-full bg-white/20 px-4 py-2 text-sm font-semibold text-white shadow-md backdrop-blur-md transition hover:bg-white/30"
-        >
-          {unit === "metric" ? "Switch to °F" : "Switch to °C"}
-        </button>
-      </div>
-
-      {/* HERO SECTION — ADD HERE */}
-      <HeroSection />
-
-      <SearchBar onSearch={handleSearch} onUseLocation={handleUseLocation} />
-
-      {recentCities.length > 0 && (
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex items-center gap-3">
-            <p className="text-sm font-medium text-blue-100">
-              Recent searches
-            </p>
-
-            <button
-              onClick={() => setRecentCities([])}
-              className="text-xs text-blue-200 transition hover:text-white hover:underline"
-            >
-              Clear
-            </button>
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-3">
-            {recentCities.map((city) => (
-              <button
-                key={city}
-                onClick={() => handleSearch(city)}
-                className="rounded-full border border-white/10 bg-white/20 px-4 py-2 text-sm font-medium text-white backdrop-blur-md transition hover:scale-105 hover:bg-white/30 active:scale-95"
-              >
-                {city}
-              </button>
-            ))}
-          </div>
+      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col gap-8 drop-shadow-2xl">
+        <div className="flex justify-end">
+          <button
+            onClick={handleToggleUnit}
+            className="rounded-full bg-white/20 px-4 py-2 text-sm font-semibold text-white shadow-md backdrop-blur-md transition hover:bg-white/30"
+          >
+            {unit === "metric" ? "Switch to °F" : "Switch to °C"}
+          </button>
         </div>
-      )}
 
-      {loading && <Loader />}
-      {error && <ErrorMessage message={error} />}
+        <HeroSection />
 
-      {weatherData && (
-        <WeatherCard
-          data={weatherData}
-          unit={unit}
-          onTogglePin={togglePinnedCity}
-          isPinned={isCurrentCityPinned}
-        />
-      )}
+        <SearchBar onSearch={handleSearch} onUseLocation={handleUseLocation} />
 
-      {pinnedCitiesWeather.length > 0 && (
-        <PinnedCitiesPanel
-          cities={pinnedCitiesWeather}
-          unit={unit}
-          onRemoveCity={removePinnedCity}
-        />
-      )}
+        {recentCities.length > 0 && (
+          <div className="flex flex-col items-center gap-3">
+            <div className="flex items-center gap-3">
+              <p className="text-sm font-medium text-blue-100">
+                Recent searches
+              </p>
 
-      {forecastData.length > 0 && (
-        <ForecastSection data={forecastData} unit={unit} />
-      )}
+              <button
+                onClick={() => setRecentCities([])}
+                className="text-xs text-blue-200 transition hover:text-white hover:underline"
+              >
+                Clear
+              </button>
+            </div>
 
-      <Footer />
-    </div>
-  </main>
-);
+            <div className="flex flex-wrap justify-center gap-3">
+              {recentCities.map((city) => (
+                <button
+                  key={city}
+                  onClick={() => handleSearch(city)}
+                  className="rounded-full border border-white/10 bg-white/20 px-4 py-2 text-sm font-medium text-white backdrop-blur-md transition hover:scale-105 hover:bg-white/30 active:scale-95"
+                >
+                  {city}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {loading && <Loader />}
+        {error && <ErrorMessage message={error} />}
+
+        {weatherData && (
+          <WeatherCard
+            data={weatherData}
+            unit={unit}
+            onTogglePin={togglePinnedCity}
+            isPinned={isCurrentCityPinned}
+          />
+        )}
+
+        {pinnedCitiesWeather.length > 0 && (
+          <PinnedCitiesPanel
+            cities={pinnedCitiesWeather}
+            unit={unit}
+            onRemoveCity={removePinnedCity}
+          />
+        )}
+
+        {forecastData.length > 0 && (
+          <ForecastSection data={forecastData} unit={unit} />
+        )}
+
+        <Footer />
+      </div>
+    </main>
+  );
 };
 
 export default Home;
